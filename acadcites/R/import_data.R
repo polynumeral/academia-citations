@@ -67,7 +67,9 @@ importEraFile <- function(era_path) {
                   'for3', 'for3_name', 'issn1', 'issn2', 'issn3',
                   'issn4', 'issn5', 'issn6', 'issn7')
 
-    df %>% mutate_each(funs(str_trim))
+
+
+
     issns <- df %>% select(issn1, issn2, issn3, issn4, issn5, issn6, issn7) %>% toSetStr
     topics <- df %>% select(for1_name, for2_name, for3_name) %>%
         mutate_each(funs(str_trim)) %>%
