@@ -3,15 +3,17 @@
 #' Import and combine paper citations, paper downloads, and journal information.
 #'
 #' @param cites_path A path to a file with paper citation data for papers both
-#' on and off Academia,
-#' @param journals_path A path to a file with data on academic journals.
-#' @param doc_types_dirpath A path to a *directory* containing one or more files with
-#' document categorization results (Original Research, Commentary/Editorial, etc.)
-#' @param ... Other arguments to import and join functions.
+#' on and off Academia. (defaults to package dataset) 
+#' @param journals_path A path to a file with data on academic journals. (defaults to package dataset)
+#' @param doc_types_dir A path to a file with document type classification results
+#' (Original Research, Commentary/Editorial, etc.) from Amazon MTurk. (defaults to package dataset)
+#' @param only_complete (default TRUE) Only keep rows where data is not missing.
+#' @param only_original (default TRUE) Only keep rows with "Original Research" articles.
 #' 
 #' @return A dataframe of citation, download, and journal data merged together.
 #'
-importData <- function(cites_path=NULL, journals_path=NULL, doc_types_path=NULL, ...) {
+importData <- function(cites_path=NULL, journals_path=NULL, doc_types_path=NULL,
+                      only_complete=TRUE, only_original=TRUE) {
 
     if (is.null(cites_path)) {
         cites_path <- system.file('extdata', 'papers.csv.gz',
@@ -28,14 +30,14 @@ importData <- function(cites_path=NULL, journals_path=NULL, doc_types_path=NULL,
     }
 
     cat('Importing article citations ...\n')
-    cites <- importCitesFile(cites_path, ...)
+    cites <- importCitesFile(cites_path, only_complete)
     cat('Importing journal information ...\n')
-    journals <- importEraFile(journals_path, ...)
+    journals <- importEraFile(journals_path)
     cat('Importing document types ...\n')
-    doc_types <- importDocTypes(doc_types_path, ...)
+    doc_types <- importDocTypes(doc_types_path)
     
-    cites <- joinCitesJournals(cites, journals, ...)
-    cites <- joinCitesDocTypes(cites, doc_types, ...)
+    cites <- joinCitesJournals(cites, journals)
+    cites <- joinCitesDocTypes(cites, doc_types, only_original)
 
     cites
 }
