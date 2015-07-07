@@ -1,0 +1,57 @@
+---
+title: "acadcites: Academia Citation Advantage Analysis"
+author: "C. Vogel"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{acadcites: Academia Citation Advantage Analysis}
+  %\VignetteEngine{knitr::rmarkdown}
+  \usepackage[utf8]{inputenc}
+---
+
+The `acadcites` package contains the code and data used by Niyazov, et. al., 
+"Open Access Meets Discoverability: Citations to Articles Posted to Academia.edu."
+
+## Importing the data
+
+To import the combined article and journal data, use the function `importData`. 
+This will read in two raw datasets: 
+
+1. One with information about papers in the on- and off-Academia sets, including 
+   - citation counts from Google Scholar
+   - an indicator of whether it appeared to be available for free online from a non-Academia source
+   - the ISSN of its journal
+   - the impact factor of its journal
+2. One with information about journals from the Australian Research Council, including
+   - ISSN (many journal have multiple ISSNs)
+   - Fields of Research, as classified by the ANZSRC.
+3. One with Mechanical Turk classifications, which includes:
+   - The document type label
+   - The
+
+Calling `importData()` will import these raw files, clean them, and merge them
+on ISSN. By default the resulting dataset only contains papers that (1) have non-missing age and online-availability data, and (2) are classified as "Original Research." This can be changed using the arguments `only_complete` and `only_original`. All analyses in the paper are based off this combined dataset.
+
+```{r}
+library('acadcites')
+cites <- importData()
+```
+
+## Replicating tables from the article
+The `makeTable` function can be used to reproduce any table in the article. `maketable` is called with two arguments: a table number and a dataframe with the articles/journals dataset (as would be returned from `importData()`).
+
+For example to reproduce Table 12 from the article:
+
+```{r}
+makeTable(10, cites)
+```
+
+
+## Replicating tables from the article
+The `makeFigure` function reproduces figures from the article. Like `makeTable`, 
+it takes a figure number and a citations data frame.
+
+```{r}
+makeFigure(1, cites)
+```
+
