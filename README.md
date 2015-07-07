@@ -16,7 +16,7 @@ The easiest way to install the package and its depdendencies is by using `instal
 
    ```{R}
    install.packages('devtools') 
-   devtools::install_local('acadcites_0.1.tar.gz')
+   devtools::install_local('acadcites_0.2.tar.gz')
    ```
 
 ## Importing data
