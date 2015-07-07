@@ -5,18 +5,11 @@ The `acadcites` package contains the data and functions used in Niyazov, et. al.
 ## Installing the R Package
 The easiest way to install the package and its depdendencies is by using `install_local` from the `devtools` package. (http://cran.r-project.org/web/packages/devtools/index.html)
 
-- Clone the repo:
-
-   ```{R}
-   git clone https://github.com/polynumeral/academia-citations
-   cd academia-citations
-   ```
-
 - From R:
 
    ```{R}
    install.packages('devtools') 
-   devtools::install_local('acadcites_0.2.tar.gz')
+   devtools::install_github('polynumeral/academia-citations/acadcites')
    ```
 
 ## Importing data
