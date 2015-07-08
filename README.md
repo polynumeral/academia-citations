@@ -58,3 +58,24 @@ makeFigure(1, cites)
 
 See `help(package='acadcites')` for more help files on individual functions, or
 `vignette('acadcites')` for information similar to what's provided here.
+
+
+## If your R session is crashing...
+
+Our code relies heavily on the [dplyr](https://github.com/hadley/dplyr/) library. While testing under the most recent version of the library (0.4.2), we've experienced repeated segfaults. (We're not alone---see https://github.com/hadley/dplyr/issues/1231 .)
+
+If your R session crashes when running our code, try downgrading to version 0.4.1.
+
+To see what version of dplyr you're running, use:
+
+```
+library('dplyr')
+devtools::session_info()
+```
+
+To downgrade to version 0.4.1, use:
+
+```
+packageurl = "http://cran.r-project.org/src/contrib/Archive/dplyr/dplyr_0.4.1.tar.gz"
+install.packages(packageurl, repos=NULL, type="source", dependencies = TRUE)
+```
