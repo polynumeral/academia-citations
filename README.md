@@ -22,6 +22,11 @@ cites <- importData()
 
 or just `cites <- acadcites::importData()` without the `library` import.
 
+## Importing data into PostgreSQL using CSVKit:
+```{shell}
+csvsql -p \\ -q \" --insert --db "postgresql://localhost" acadcites_data_combined.csv.gz
+```
+
 ## Reproducing tables from the article
 
 Tables from the article can be reproduced with the `makeTable` function.
