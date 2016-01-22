@@ -16,7 +16,8 @@
 #' @return A dataframe of citation, download, and journal data merged together.
 #'
 importData <- function(cites_path=NULL, journals_path=NULL, doc_types_path=NULL,
-                      impact_factor_dir=NULL, no_conflict_id_path=NULL, ...) {
+                      impact_factor_dir=NULL, no_conflict_id_path=NULL,
+                      only_complete=TRUE, only_original=TRUE, ...) {
 
     if (is.null(cites_path)) {
         cites_path <- system.file('extdata', 'papers.csv.gz',
@@ -57,7 +58,7 @@ importData <- function(cites_path=NULL, journals_path=NULL, doc_types_path=NULL,
         joinCitesDocTypes(doc_types, ...) %>%
         joinCitesImpactFactor(journals, impact_factors, ...) %>%
         joinMissingImpactFactorsByTitle(impact_factors, ...) %>%
-        filter(be_cf_id %in% no_conflict_ids & !is.na(impact_factor))
+        filter(be_cf_id %in% no_conflict_ids)
 }
 
 
@@ -279,7 +280,11 @@ joinCitesImpactFactor <- function(cites_df, journals_df, if_df, ...) {
 joinMissingImpactFactorsByTitle <- function(cites_df, if_df, ...) {
     cleanTitles <- function(titles) {
       titles %>%
+<<<<<<< HEAD
         stringr::str_to_lower() %>%
+=======
+        (stringr::str_to_lower) %>%
+>>>>>>> 5f1999710ae546081a7d541d720dae655664093a
         stringr::str_replace_all('-', '') %>%
         stringr::str_replace_all('\\b(series|section) [0-9a-z]{1}\\b', '') %>%
         stringr::str_replace_all('\\(.*\\)', '') %>%

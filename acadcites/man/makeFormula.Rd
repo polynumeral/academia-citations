@@ -5,7 +5,7 @@
 \title{Create a formula describing a regression of citations on covariates.}
 \usage{
 makeFormula(df, model = c("linear", "logistic", "negbin", "zinb"),
-  division_interactions = TRUE)
+  age_transform = "log", division_interactions = TRUE)
 }
 \arguments{
 \item{df}{A dataframe with citations data, and divisions as created by
@@ -13,6 +13,9 @@ makeFormula(df, model = c("linear", "logistic", "negbin", "zinb"),
 
 \item{model}{One of 'linear', 'logistic', 'negbin', or 'zinb', the last for
 zero-inflated negative binomial model.}
+
+\item{age_transform}{One of 'log' or 'quadratic'. Use either the natural logarithm
+of article age, or a quadratic in article age.}
 
 \item{division_interactions}{If TRUE (default), interact each division dummy
 with the on-Academia dummy.}

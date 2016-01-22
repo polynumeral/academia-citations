@@ -5,7 +5,7 @@
 \title{Import and combine paper citations, paper downloads, and journal information.}
 \usage{
 importData(cites_path = NULL, journals_path = NULL, doc_types_path = NULL,
-  ...)
+  impact_factor_dir = NULL, no_conflict_id_path = NULL, ...)
 }
 \arguments{
 \item{cites_path}{A path to a file with paper citation data for papers both
@@ -13,10 +13,16 @@ on and off Academia,}
 
 \item{journals_path}{A path to a file with data on academic journals.}
 
-\item{...}{Other arguments to import and join functions.}
+\item{doc_types_path}{A path to a file with document categorization
+results (Original Research, Commentary/Editorial, etc.)}
 
-\item{doc_types_dirpath}{A path to a *directory* containing one or more files with
-document categorization results (Original Research, Commentary/Editorial, etc.)}
+\item{impact_factor_dir}{A path to a *directory* containing impact factor
+tables from SciMago journal rankings.}
+
+\item{no_conflict_id_path}{A path to a file with a list of article ids with
+no search conflicts.}
+
+\item{...}{Other arguments to import and join functions.}
 }
 \value{
 A dataframe of citation, download, and journal data merged together.

@@ -50,11 +50,10 @@ getModelSummary.lm <- function(obj, alpha=0.5, ...) {
     relabel(table,
             `on_acad`='On-Academia',
             `scale(log1p(impact_factor), scale = FALSE)`='Impact factor (log, centered)',
-            `scale(age, scale = FALSE)`='Article age (centered)',
-            `scale(I(age^2), scale = FALSE)` = 'Article age squared (centered)',
+            `scale(log(age), scale = FALSE)` = 'Article age (log centered)',
+
             `online`='Available online',
             `on_acad x scale(log1p(impact_factor), scale = FALSE)` = 'On-Academia \u00D7 Impact factor',
-            `on_acad x scale(age, scale = FALSE)` = 'On-Academia \u00D7 Age',
-            `on_acad x scale(I(age^2), scale = FALSE)`= 'On-Academia \u00D7 Age Squared',
+            `on_acad x scale(log(age), scale = FALSE)`= 'On-Academia \u00D7 Age',
             `on_acad x online`='On-Academia \u00D7 Available online')
 }

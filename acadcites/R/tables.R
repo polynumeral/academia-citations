@@ -35,7 +35,8 @@
     'zinbResults',                        # Table 12
     'predictedCitations',                 # Table 13
     'predictedAdvantages',                # Table 14
-    'divisionPredictedCitations'          # Table 15
+    'predictLinearCI',                    # Table 15
+    'divisionPredictedCitations'          # Table 16
     )
 
 
@@ -47,7 +48,7 @@
 #' @param n Table caption number.
 #' @param cites_df A data frame with article citations and journal data, as produced by `importData`.
 #' @param ... Optional arguments passed to table functions.
-#'
+
 #' @return Nothing. Prints a table, usually in markdown, but possibly plain text or LaTeX.
 #'
 makeTable <- function(n, cites_df, ...) {
@@ -89,8 +90,10 @@ topJournalsByCount <- function(cites_df) {
 # Table 3. Journals with highest impact factors
 topJournalsByImpactFactor <- function(cites_df) {
     cites_df %>%
-        group_by(journal_title) %>%
+        group_by(journal_title, year) %>%
         summarize(impact_factor=max(impact_factor), topics=first(topics)) %>%
+        group_by(journal_title) %>%
+        summarize(impact_factor=mean(impact_factor), topics=first(topics)) %>%
         arrange(-impact_factor) %>%
         mutate(topics=topics %>%
                    str_replace_all(., '\\"|\\{|\\}', '') %>%
@@ -323,7 +326,7 @@ zinbResults <- function(cites_df) {
 
 # Make hypothetical input data with which to predict citations.
 makeCases <- function(cites_divs, ...) {
-    impfs <- quantile(cites_divs$impact_factor, probs=c(.1, .5, .9))
+    impfs <- quantile(cites_divs$impact_factor, probs=c(.1,.5,.9), na.rm=TRUE)
     divisions <- cites_divs %>%
         selectDivisionCols %>%
         summarise_each(funs(mean))
@@ -354,6 +357,25 @@ makeCases <- function(cites_divs, ...) {
     cbind(case_df, divisions)
 }
 
+predictLinearCI <- function(cites_df, age_=5) {
+    linfit <- runLinearModel(cites_df %>% addDivisions)
+    cases <- makeCases(cites_df %>% addDivisions) %>%
+            filter(impact_factor == median(impact_factor, na.rm=TRUE) & age == age_)
+    linpreds <- predict(linfit, cases, se.fit=TRUE)
+    expected_cites <- (linpreds$fit + 0.5*linpreds$se.fit^2) %>% expm1
+    lci_cites <- qlnorm(0.025, linpreds$fit, linpreds$se.fit) -1
+    uci_cites <- qlnorm(0.975, linpreds$fit, linpreds$se.fit) -1
+    lpi_cites <- qlnorm(0.025, linpreds$fit, linpreds$residual.scale) -1
+    upi_cites <- qlnorm(0.975, linpreds$fit, linpreds$residual.scale) -1
+    cbind(cases %>% select(age, on_acad, online),
+          round(expected_cites, 2),
+          paste0('(', round(lci_cites, 2), ', ', round(uci_cites, 2), ')'),
+          paste0('(', round(lpi_cites, 2), ', ', round(upi_cites, 2), ')')) %>%
+    mutate(on_acad=factor(on_acad, labels=c('N', 'Y')),
+               online=factor(online, labels=c('N', 'Y'))) %>%
+    knitr::kable(col.names=c('Age', 'On-Academia', 'Online', 'Pred. Cites', '95% Conf. Int.', '95% Pred. Int.'))
+}
+
 # Predict citations from the hypothetical data
 # using Linear, NB, and ZINB models
 predictCases <- function(cites_df) {
@@ -374,9 +396,9 @@ predictCases <- function(cites_df) {
 
     cases <- makeCases(cites_divs)
 
-    preds_lin = predict(linfit, cases) %>% expm1
-    preds_nb = predict(nbfit, cases, type='response')
-    preds_zinb = predict(zinbfit, cases, type='response')
+    preds_lin <- predict(linfit, cases) %>% expm1
+    preds_nb <- predict(nbfit, cases, type='response')
+    preds_zinb <- predict(zinbfit, cases, type='response')
 
     list(preds_lin, preds_nb, preds_zinb) %>%
         do.call(cbind, .) %>%
@@ -389,9 +411,7 @@ predictCases <- function(cites_df) {
                        value.name='citations') %>%
         mutate(on_acad=factor(on_acad, labels=c('N', 'Y')),
                online=factor(online, labels=c('N', 'Y')),
-               impact_factor=factor(impact_factor, labels=c('10th',
-                                                       '50th',
-                                                       '90th')))
+               impact_factor=factor(impact_factor, labels=c('10th', '50th', '90th')))
 
 }
 
@@ -401,7 +421,6 @@ predictCases <- function(cites_df) {
 advantagePreds <- function(preds) {
     preds %>% group_by(model, impact_factor, age) %>%
         mutate(advantage=citations / first(citations)-1)
-
 }
 
 # Format a dataframe of predictions as a table.

@@ -1,7 +1,9 @@
 Package: acadcites
 Title: Manage data and models to study effect of Academia.edu on citations.
-Version: 0.2
-Authors@R: "Carl Vogel <carl@polynumeral.com> [aut, cre]"
+Version: 0.3.0
+Authors@R: as.person(c("Carl Vogel <carl@polynumeral.com> [aut, cre]",
+                       "Yuri Niyazov <yuri@academia.edu> [aut]"))
+BugReports: https://github.com/polynumeral/academia-citations/issues
 Description: Manage data and run models to study the effect of posting to Academia.edu on
     article citations.
 Depends:
@@ -19,6 +21,7 @@ Imports:
     knitr,
     scales,
     stargazer,
+    testthat,
     memisc,
     pander
 VignetteBuilder: knitr

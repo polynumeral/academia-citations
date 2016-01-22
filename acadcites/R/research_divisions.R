@@ -5,7 +5,7 @@
         '01' = 'Mathematical Sciences',
         '02' = 'Physical Sciences',
         '03' = 'Chemical Sciences',
-        '04' = 'Earth Sciencess',
+        '04' = 'Earth Sciences',
         '05' = 'Environmental Sciences',
         '06' = 'Biological Sciences',
         '07' = 'Agricultural and Veterinary Sciences',

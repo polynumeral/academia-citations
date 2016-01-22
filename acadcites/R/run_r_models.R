@@ -13,6 +13,8 @@
 #' `importData` followed by `addDivisions`
 #' @param model One of 'linear', 'logistic', 'negbin', or 'zinb', the last for
 #' zero-inflated negative binomial model.
+#' @param age_transform One of 'log' or 'quadratic'. Use either the natural logarithm
+#' of article age, or a quadratic in article age.
 #' @param division_interactions If TRUE (default), interact each division dummy
 #' with the on-Academia dummy.
 #'
@@ -20,7 +22,19 @@
 #'
 makeFormula <- function(df,
                        model=c('linear', 'logistic', 'negbin', 'zinb'),
+                       age_transform='log',
                        division_interactions=TRUE) {
+
+    # Make the age term in the formula based on the specified transform.
+    if (age_transform == 'log') {
+        age_term <- 'scale(log(age), scale=FALSE)'
+    } else if (age_transform == 'quadratic') {
+        age_term <- 'poly(age, 2)'
+    } else if (age_transform == 'none') {
+        age_term <- 'age'
+    } else {
+        stop('age_transform must be "log" or "quadratic" or "none"')
+    }
 
     division_terms <- df %>%
         selectDivisionCols %>%
@@ -30,17 +44,15 @@ makeFormula <- function(df,
         paste(collapse=' + ')
 
     rhs <- if (division_interactions) {
-        paste0('on_acad * (scale(log1p(impact_factor), scale=FALSE) +
-                           scale(age, scale=FALSE) +
-                           scale(I(age^2), scale=FALSE) +
-                           online + ',
-                           division_terms, ')')
+        paste0('on_acad * (scale(log1p(impact_factor), scale=FALSE) + ',
+               age_term, ' + online + ',
+               division_terms, ')')
     } else {
-        # Leave out on_acad * division interatctions.
-        paste0('on_acad * (scale(log1p(impact_factor), scale=FALSE) +
-                           scale(age, scale=FALSE) +
-                           scale(I(age^2), scale=FALSE) +
-                           online) + ',
+        # Don't interact division and on-Academia effect. They don't
+        # meaningfully contribute to the model, and cause some convergence
+        # issues in the ZINB model.
+        paste0('on_acad * (scale(log1p(impact_factor), scale=FALSE) + ',
+                           age_term, ' + online) + ',
                division_terms)
     }
 
@@ -68,7 +80,7 @@ makeFormula <- function(df,
 #'
 runLinearModel <- function(df, ...) {
     frm <- makeFormula(df, model='linear', ...)
-    lm(frm, data=df, ...)
+    lm(frm, data=df)
 }
 
 
@@ -121,7 +133,7 @@ runZeroInflNegBinGLM <- function(df, ...) {
     logit_coef <- runLogisticModel(df, division_interactions=FALSE, ...)$coef
     negbin_coef <- runNegBinModel(df,  division_interactions=FALSE, ...)$coef
 
-    frm <- makeFormula(df, model='zinb', division_interactions=FALSE)
+    frm <- makeFormula(df, model='zinb', division_interactions=FALSE, ...)
 
     starts = pscl::zeroinfl.control(start=list(count=negbin_coef,
                                                zero=logit_coef))

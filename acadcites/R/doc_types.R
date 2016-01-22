@@ -12,14 +12,14 @@ relabelTypes <- function(s, label_map) {
 cleanColumnNames <- function(df) {
     df %>%
         names %>%
-        str_replace_all('HIT', 'Hit') %>%
-        str_replace_all('Title', 'HitTitle') %>%
-        str_replace_all("([a-z0-9])([A-Z])", "\\1_\\2") %>%
-        str_replace_all("([a-z])([A-Z0-9])", "\\1_\\2") %>%
-        str_replace_all('\\.', '_') %>%
-        tolower %>%
-        str_replace('^input_', '') %>%
-        str_replace('^answer_', '')    
+        stringr::str_replace_all('HIT', 'Hit') %>%
+        stringr::str_replace_all('Title', 'HitTitle') %>%
+        stringr::str_replace_all("([a-z0-9])([A-Z])", "\\1_\\2") %>%
+        stringr::str_replace_all("([a-z])([A-Z0-9])", "\\1_\\2") %>%
+        stringr::str_replace_all('\\.', '_') %>%
+        stringr::str_to_lower() %>%
+        stringr::str_replace('^input_', '') %>%
+        stringr::str_replace('^answer_', '')
 }
 
 
@@ -32,9 +32,9 @@ convertDateTimes <- function(dtstr) {
     tz <- dtstr %>%
         stringr::str_match('([A-Za-z]{1,}) 2015$') %>%
         `[`(,2)
-           
+
     tz <- if (all(tz == 'PDT')) { 'Etc/GMT-7' } else { 'UTC' }
-    
+
     dtstr %>%
         str_replace_all('[A-Za-z]{1,} 2015', '2015') %>%
         strptime(format='%a %b %d %T %Y', tz=tz) %>%
@@ -63,7 +63,7 @@ cleanDocumentType <- function(doctypes) {
         'response' = 'Response or Comment'
         )
 
-    relabelTypes(doctypes, reverseList(label_map))    
+    relabelTypes(doctypes, reverseList(label_map))
 }
 
 
@@ -92,7 +92,7 @@ importMTResults <- function(path) {
                accept_time = convertDateTimes(accept_time),
                submit_time = convertDateTimes(submit_time),
                document_type = cleanDocumentType(document_type)) %>%
-        filter(!is.na(document_type)) 
+        filter(!is.na(document_type))
 }
 
 
@@ -102,14 +102,14 @@ classifyDocTypes <- function(mt_results, min_agreement=3) {
         summarize(type_mt_cnt = n(), doi_url=first(doi_url)) %>%
         mutate(total_mt_cnt=sum(type_mt_cnt),
                agreement=type_mt_cnt/total_mt_cnt) %>%
-        filter(type_mt_cnt >= min_agreement & total_mt_cnt > 2) 
+        filter(type_mt_cnt >= min_agreement & total_mt_cnt > 2)
 }
 
 
 importGoldStandard <- function(gspath, ...) {
     read.csv(gspath, as.is=TRUE, ...) %>%
         mutate(document_type = cleanDocumentType(document_type))
-    
+
 }
 
 compareMTGoldStandard <- function(gs_df, mt_results, min_agreement=2) {
@@ -162,4 +162,3 @@ filterByTitle <- function(cites) {
                          !check_title(title, book_review_grep))
 
 }
-
