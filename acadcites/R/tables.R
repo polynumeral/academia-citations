@@ -30,7 +30,7 @@
     'citationSummaryStats',               # Table 6
     'impactFactorBinsMedians',            # Table 7
     'citesImpactFactorRegression',        # Table 8
-    'covariateSummaryStats',              # Table 9
+    'covariateSummaryStatsBySample',      # Table 9
     'regressionResults',                  # Table 10
     'shareUncitedArticles',               # Table 11
     'zinbResults',                        # Table 12
@@ -239,32 +239,15 @@ covariateSummaryStats <- function(cites_df) {
                      align=c('l', 'r', 'r', 'r'), digits=2)
 }
 
-covariatesSummaryStatsBySample <- function(cites_df) {
- cleanVarName <- function(s) {
-        s %>% str_replace_all('_', ' ') %>%
-            (function(s) {paste0(toupper(substring(s, 1,1)),
-                                substring(s,2)) })
-    }
-    getStats <- function(var, sample) {
-        v <- cites_df %>% filter(source == sample) %>% select_(var) %>% unlist
-        data.frame(source=sample,
-                   var=cleanVarName(var),
-                   mean=mean(v, na.rm=TRUE),
-                   median=median(v, na.rm=TRUE),
-                   stdev=sd(v, na.rm=TRUE))
-    }
-
-    on <- lapply(list('age', 'impact_factor', 'online'),
-                function(x) getStats(x, 'on')) %>%
-                    do.call(rbind, .)
-    off <- lapply(list('age', 'impact_factor', 'online'),
-                 function(x) getStats(x, 'off')) %>%
-                     do.call(rbind, .)
-    rbind(on, off) %>%
-
-        knitr::kable(col.names=c('', 'Mean', 'Median', 'Std. Dev.'),
-                     align=c('l', 'r', 'r', 'r'), digits=2)
+covariateSummaryStatsBySample <- function(cites_df) {
+  cat('\n\nOn\n')
+  cites_df %>% filter(source=='on') %>% covariateSummaryStats %>% print
+  cat('\n\nOff\n')
+  cites_df %>% filter(source=='off') %>% covariateSummaryStats %>% print
+  cat('\n\nAll\n')
+  cites_df %>% covariateSummaryStats %>% print
 }
+
 
 # Table 10. Linear and Neg. Bin. regression results.
 regressionResults <- function(cites_df) {
@@ -357,24 +340,6 @@ makeCases <- function(cites_divs, ...) {
     cbind(case_df, divisions)
 }
 
-predictLinearCI <- function(cites_df, age_=5) {
-    linfit <- runLinearModel(cites_df %>% addDivisions)
-    cases <- makeCases(cites_df %>% addDivisions) %>%
-            filter(impact_factor == median(impact_factor, na.rm=TRUE) & age == age_)
-    linpreds <- predict(linfit, cases, se.fit=TRUE)
-    expected_cites <- (linpreds$fit + 0.5*linpreds$se.fit^2) %>% expm1
-    lci_cites <- qlnorm(0.025, linpreds$fit, linpreds$se.fit) -1
-    uci_cites <- qlnorm(0.975, linpreds$fit, linpreds$se.fit) -1
-    lpi_cites <- qlnorm(0.025, linpreds$fit, linpreds$residual.scale) -1
-    upi_cites <- qlnorm(0.975, linpreds$fit, linpreds$residual.scale) -1
-    cbind(cases %>% select(age, on_acad, online),
-          round(expected_cites, 2),
-          paste0('(', round(lci_cites, 2), ', ', round(uci_cites, 2), ')'),
-          paste0('(', round(lpi_cites, 2), ', ', round(upi_cites, 2), ')')) %>%
-    mutate(on_acad=factor(on_acad, labels=c('N', 'Y')),
-               online=factor(online, labels=c('N', 'Y'))) %>%
-    knitr::kable(col.names=c('Age', 'On-Academia', 'Online', 'Pred. Cites', '95% Conf. Int.', '95% Pred. Int.'))
-}
 
 # Predict citations from the hypothetical data
 # using Linear, NB, and ZINB models
@@ -459,7 +424,29 @@ makeDivisionCases <- function(cites_divs) {
     lapply(as.list(divnames), function(x) makeDivCase(x, cases)) %>% do.call(rbind, .)
 }
 
-# Table 15. Predicted citations and advantage by division, for a 5-year-old
+
+# Table 15: Linear model confidence and prediction intervals.
+predictLinearCI <- function(cites_df, ages=c(3,5)) {
+    linfit <- runLinearModel(cites_df %>% addDivisions)
+    cases <- makeCases(cites_df %>% addDivisions) %>%
+            filter(impact_factor == median(impact_factor, na.rm=TRUE) & age %in% ages)
+    linpreds <- predict(linfit, cases, se.fit=TRUE)
+    expected_cites <- (linpreds$fit + 0.5*linpreds$se.fit^2) %>% expm1
+    lci_cites <- qlnorm(0.025, linpreds$fit, linpreds$se.fit) -1
+    uci_cites <- qlnorm(0.975, linpreds$fit, linpreds$se.fit) -1
+    lpi_cites <- qlnorm(0.025, linpreds$fit, linpreds$residual.scale) -1
+    upi_cites <- qlnorm(0.975, linpreds$fit, linpreds$residual.scale) -1
+    cbind(cases %>% select(age, on_acad, online),
+          round(expected_cites, 2),
+          paste0('(', round(lci_cites, 2), ', ', round(uci_cites, 2), ')'),
+          paste0('(', round(lpi_cites, 2), ', ', round(upi_cites, 2), ')')) %>%
+    mutate(on_acad=factor(on_acad, labels=c('N', 'Y')),
+               online=factor(online, labels=c('N', 'Y'))) %>%
+    knitr::kable(col.names=c('Age', 'On-Academia', 'Online', 'Pred. Cites', '95% Conf. Int.', '95% Pred. Int.'))
+}
+
+
+# Table 16. Predicted citations and advantage by division, for a 5-year-old
 # paper, not online, and at the median impact factor for the given division.
 divisionPredictedCitations <- function(cites_df) {
     cites_divs <- addDivisions(cites_df)
