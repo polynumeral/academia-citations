@@ -16,7 +16,8 @@
 ## 12. Regression results for ZINB model
 ## 13. Predicted Citation lookup tables
 ## 14. Predicted Advantage lookup tables
-## 15. Predicted Advantage by Division.
+## 15. Confidence intervals for Linear model
+## 16. Predicted Advantage by Division
 
 ## Function names that produce tables, listed in order
 ## of their appearance in the paper.
@@ -286,8 +287,7 @@ regressionResults <- function(cites_df) {
            getSummary = getModelSummary,
            summary.stats=c('N', 'R-squared', 'Deviance',
                            'Log-likelihood', 'AIC')) %>%
-    .cleanRegressionTable %>%
-    pander::pander(style='grid', emphasize.rownames=FALSE)
+    .cleanRegressionTable
 }
 
 # Table 11. Share of uncited articles by cohort and off-/on-Academia

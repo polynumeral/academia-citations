@@ -12,16 +12,17 @@ License: GPL-3
 LazyData: true
 Imports:
     dplyr,
-    magrittr,
-    stringr,
-    reshape2,
     ggplot2,
-    MASS,
-    pscl,
     knitr,
+    magrittr,
+    MASS,
+    memisc,
+    pander,
+    pscl,
+    quantreg,
+    reshape2,
     scales,
     stargazer,
-    testthat,
-    memisc,
-    pander
+    stringr,
+    testthat
 VignetteBuilder: knitr
